@@ -47,6 +47,52 @@ namespace ssd_offload
             Environment.Exit(1);
         }
 
+        private static string SSDToHDDPath(string ssdPath)
+        {
+            // Converts the given path on the SSD to the path on the HDD
+
+            // Get the drive letter
+            string driveLetter = GetDriveLetter(ssdPath);
+            Console.WriteLine(driveLetter);
+
+            return null;
+        }
+
+        private static string GetDriveLetter(string fullpath)
+        {
+            // Returns the drive letter of the path
+            // It doesn't necessarily need to be a single letter
+
+            StringBuilder builder = new StringBuilder();
+            bool foundColon = false;
+
+            foreach (char c in fullpath)
+            {
+                // Error if we hit a slash
+                if (c == '\\')
+                    throw new Exception("" + fullpath + " does not have a valid drive letter");
+
+                // Stop when we hit a colon
+                if (c == ':')
+                {
+                    foundColon = true;
+                    break;
+                }
+
+                // Add it to the current drive letter
+                builder.Append(c);
+            }
+
+            // Error if we never ran into a colon
+            if (!foundColon)
+                throw new Exception("Could not find a colon in " + fullpath);
+
+            return builder.ToString();
+        }
+
+
+        #region subcommands
+
         private static void OffloadToHDD(string[] args)
         {
             // Moves the given folder to the offload directory, then replaces it with a symlink
@@ -64,7 +110,8 @@ namespace ssd_offload
                 ExitWithError("No such folder \"" + fullPathOfTarget + "\"");
 
             // TODO: Actually move it.
-            Console.WriteLine("Pretending to move \"" + fullPathOfTarget + "\" to the place.");
+            string fullPathOnHDD = SSDToHDDPath(fullPathOfTarget);
+            Console.WriteLine("Pretending to move \"" + fullPathOfTarget + "\" to \"" + fullPathOnHDD + "\"");
         }
 
         private static void SetOffloadDest(string[] args)
@@ -90,5 +137,7 @@ namespace ssd_offload
             // Display the offload directory
             Console.WriteLine("Offload destination is " + Settings.OffloadDest);
         }
+
+        #endregion
     }
 }
