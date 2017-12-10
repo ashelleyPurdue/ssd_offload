@@ -56,10 +56,8 @@ namespace ssd_offload
             string driveLetter = ssdPath.Substring(0, driveLetterEnd);
             string pathWithoutLetter = ssdPath.Substring(driveLetterEnd + 1);
 
-            Console.WriteLine(driveLetter);
-            Console.WriteLine(pathWithoutLetter);
-
-            return null;
+            // Construct the new path
+            return Settings.OffloadDest + "\\" + driveLetter + pathWithoutLetter;
         }
 
         private static int GetDriveLetterEnd(string fullpath)
