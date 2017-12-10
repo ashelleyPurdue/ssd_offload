@@ -8,6 +8,8 @@ namespace ssd_offload
 {
     class Program
     {
+        private static Properties.Settings Settings = Properties.Settings.Default;
+
         public delegate void SubcommandMethod(string[] args);
         private static Dictionary<string, SubcommandMethod> subcommands = new Dictionary<string, SubcommandMethod>();
 
@@ -49,14 +51,16 @@ namespace ssd_offload
                 ExitWithError("Usage: ssd_offload -set_offload_dest <full path to the folder where we're keeping all of our offloaded files>");
 
             // TODO: Error if path doesn't exist
-            // TODO: Change the settings
+            // Change the settings
+            Settings.OffloadDest = args[1];
+            Settings.Save();
             Console.WriteLine("Set offload destination to " + args[1]);
         }
 
         private static void GetOffloadDest(string[] args)
         {
             // Display the offload directory
-            Console.WriteLine("Offload destination is a;klfgjkl;ajfl;akdjfs");
+            Console.WriteLine("Offload destination is " + Settings.OffloadDest);
         }
     }
 }
