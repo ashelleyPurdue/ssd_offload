@@ -194,7 +194,6 @@ namespace ssd_offload
             return fullpath != realPath;
         }
 
-
         #region subcommands
 
         private static void OffloadToHDD(string[] args)
@@ -242,11 +241,14 @@ namespace ssd_offload
             string ssdPath = Path.GetFullPath(args[1]);
             string hddPath = SSDToHDDPath(ssdPath);
 
-            // TODO: Error if the ssdPath is not a symlink
+            // Error if the ssdPath is not a symlink
             if (!IsSymlink(ssdPath))
                 ExitWithError("The specified folder is not a symlink.");
 
-            // TODO: Error if there is no coresponding hddPath
+            // Error if there is no coresponding hddPath
+            if (!Directory.Exists(hddPath))
+                ExitWithError("The folder \"" + hddPath + "\" does not exist.");
+
             // TODO: Actually copy it back
             Console.WriteLine("Pretending to restore " + ssdPath);
         }
