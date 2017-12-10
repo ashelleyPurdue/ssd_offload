@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="OffloadDest" Type="System.String" Scope="User">
-      <Value Profile="(Default)">E:\ssd_symlink_targets\</Value>
+      <Value Profile="(Default)">E:\ssd_symlink_targets</Value>
     </Setting>
   </Settings>
 </SettingsFile>

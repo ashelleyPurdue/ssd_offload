@@ -114,7 +114,7 @@ namespace ssd_offload
             if (args.Length < 2)
                 ExitWithError("Usage: ssd_offload -set_offload_dest <full path to the folder where we're keeping all of our offloaded files>");
 
-            string dir = args[1];
+            string dir = args[1].TrimEnd('\\');
 
             // Error if path doesn't exist
             if (!Directory.Exists(dir))
@@ -129,7 +129,7 @@ namespace ssd_offload
         private static void GetOffloadDest(string[] args)
         {
             // Display the offload directory
-            Console.WriteLine("Offload destination is " + Settings.OffloadDest);
+            Console.WriteLine(Settings.OffloadDest);
         }
 
         #endregion

@@ -25,7 +25,7 @@ namespace ssd_offload.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("E:\\ssd_symlink_targets\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("E:\\ssd_symlink_targets")]
         public string OffloadDest {
             get {
                 return ((string)(this["OffloadDest"]));
