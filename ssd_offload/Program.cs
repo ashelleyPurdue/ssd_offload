@@ -186,13 +186,6 @@ namespace ssd_offload
             throw new Exception("Could not find a colon in " + fullpath);
         }
 
-        private static bool IsSymlink(string fullpath)
-        {
-            // Returns if the specified folder is a symlink, or the real deal.
-            string realPath = GetRealPath(fullpath);
-
-            return fullpath != realPath;
-        }
 
         #region subcommands
 
@@ -241,9 +234,9 @@ namespace ssd_offload
             string ssdPath = Path.GetFullPath(args[1]);
             string hddPath = SSDToHDDPath(ssdPath);
 
-            // Error if the ssdPath is not a symlink
-            if (!IsSymlink(ssdPath))
-                ExitWithError("The specified folder is not a symlink.");
+            // Error if it doesn't point to hddPath, or if it's not a symlink
+            if (GetRealPath(ssdPath) != hddPath)
+                ExitWithError("The specified folder is not a symlink created with this program");
 
             // Error if there is no coresponding hddPath
             if (!Directory.Exists(hddPath))
