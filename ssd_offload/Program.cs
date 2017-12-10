@@ -158,10 +158,8 @@ namespace ssd_offload
             // Get the path that we're offloading the folder to.
             string fullPathOnHDD = SSDToHDDPath(fullPathOfTarget);
 
-            string tempSymlinkName = fullPathOfTarget + "_symlink";
             Console.WriteLine("original path: " + fullPathOfTarget);
             Console.WriteLine("offloaded path: " + fullPathOnHDD);
-            Console.WriteLine("symlink path: " + tempSymlinkName);
 
             // Error if there is already a folder or file there
             if (Directory.Exists(fullPathOnHDD) || File.Exists(fullPathOnHDD))
@@ -172,11 +170,12 @@ namespace ssd_offload
             DirectoryCopy(fullPathOfTarget, fullPathOnHDD);
 
             // TODO: Delete the original
-            Console.WriteLine("Pretending to delete original...");
+            Console.WriteLine("Deleting original...");
+            Directory.Delete(fullPathOfTarget, true);
 
             // Create a symlink in place of the original
             Console.WriteLine("Create symbolic link...");
-            CreateSymbolicLink(tempSymlinkName, fullPathOnHDD, SymbolicLink.Directory);
+            CreateSymbolicLink(fullPathOfTarget, fullPathOnHDD, SymbolicLink.Directory);
         }
 
         private static void SetOffloadDest(string[] args)
