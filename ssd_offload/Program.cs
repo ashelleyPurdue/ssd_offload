@@ -37,14 +37,34 @@ namespace ssd_offload
                 return;
             }
 
-            // TODO: Default behavior
-            Console.WriteLine("No subcommands");
+            // Default behavior
+            OffloadToHDD(args);
         }
 
         private static void ExitWithError(string error)
         {
             Console.WriteLine("ERROR: " + error);
             Environment.Exit(1);
+        }
+
+        private static void OffloadToHDD(string[] args)
+        {
+            // Moves the given folder to the offload directory, then replaces it with a symlink
+            // Usage: ssd_offload <relative path>
+
+            // Error if no arguments
+            if (args.Length == 0)
+                ExitWithError("No folder specified.  Which folder do you want moved to your HDD?");
+
+            // Get the full path of the specified folder
+            string fullPathOfTarget = Path.GetFullPath(args[0]);
+
+            // Error if it's not a directory
+            if (!Directory.Exists(fullPathOfTarget))
+                ExitWithError("No such folder \"" + fullPathOfTarget + "\"");
+
+            // TODO: Actually move it.
+            Console.WriteLine("Pretending to move \"" + fullPathOfTarget + "\" to the place.");
         }
 
         private static void SetOffloadDest(string[] args)
