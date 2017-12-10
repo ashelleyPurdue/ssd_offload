@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace ssd_offload
 {
@@ -15,7 +16,9 @@ namespace ssd_offload
 
         static void Main(string[] args)
         {
-            // TODO: Error if no arguments
+            // Error if no arguments
+            if (args.Length == 0)
+                ExitWithError("No arguments given.  Type \"ssd_offload -help\" for help.");     // TODO: Implement the -help subcommand
 
             // Populate the subcommand table
             subcommands.Add("-set_offload_dest", SetOffloadDest);
@@ -40,7 +43,7 @@ namespace ssd_offload
 
         private static void ExitWithError(string error)
         {
-            Console.WriteLine(error);
+            Console.WriteLine("ERROR: " + error);
             Environment.Exit(1);
         }
 
@@ -50,11 +53,16 @@ namespace ssd_offload
             if (args.Length < 2)
                 ExitWithError("Usage: ssd_offload -set_offload_dest <full path to the folder where we're keeping all of our offloaded files>");
 
-            // TODO: Error if path doesn't exist
+            string dir = args[1];
+
+            // Error if path doesn't exist
+            if (!Directory.Exists(dir))
+                ExitWithError("The directory " + dir + " does not exist.");
+
             // Change the settings
-            Settings.OffloadDest = args[1];
+            Settings.OffloadDest = dir;
             Settings.Save();
-            Console.WriteLine("Set offload destination to " + args[1]);
+            Console.WriteLine("Set offload destination to " + dir);
         }
 
         private static void GetOffloadDest(string[] args)
