@@ -36,6 +36,7 @@ namespace ssd_offload
                 ExitWithError("No arguments given.  Type \"ssd_offload -help\" for help.");     // TODO: Implement the -help subcommand
 
             // Populate the subcommand table
+            subcommands.Add("-restore", RestoreFromHDD);
             subcommands.Add("-set_offload_dest", SetOffloadDest);
             subcommands.Add("-get_offload_dest", GetOffloadDest);
 
@@ -173,6 +174,21 @@ namespace ssd_offload
             // Create a symlink in place of the original
             Console.WriteLine("Create symbolic link...");
             CreateSymbolicLink(fullPathOfTarget, fullPathOnHDD, SymbolicLink.Directory);
+        }
+
+        private static void RestoreFromHDD(string[] args)
+        {
+            // Error if no args
+            if (args.Length < 2)
+                ExitWithError("No folder specified.  Usage: ssd_offload -restore <folder you want restored>");
+
+            string ssdPath = Path.GetFullPath(args[1]);
+            string hddPath = SSDToHDDPath(ssdPath);
+
+            // TODO: Error if the ssdPath is not a symlink
+            // TODO: Error if there is no coresponding hddPath
+            // TODO: Actually copy it back
+            Console.WriteLine("Pretending to restore " + ssdPath);
         }
 
         private static void SetOffloadDest(string[] args)
