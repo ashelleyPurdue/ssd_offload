@@ -47,7 +47,46 @@ namespace ssd_offload
             Environment.Exit(1);
         }
 
-        private static string SSDToHDDPath(string ssdPath)
+        private static void DirectoryCopy(string sourceDirName, string destDirName)
+        {
+            // Recursively copies the given directory and all of its subdirectories.
+            // Pilfered and tweaked from https://docs.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+            // WHY is this not already included in the System.IO namespace???
+
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location.
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string temppath = Path.Combine(destDirName, subdir.Name);
+                DirectoryCopy(subdir.FullName, temppath);
+            }
+        }
+
+    private static string SSDToHDDPath(string ssdPath)
         {
             // Converts the given path on the SSD to the path on the HDD
 
@@ -101,9 +140,20 @@ namespace ssd_offload
             if (!Directory.Exists(fullPathOfTarget))
                 ExitWithError("No such folder \"" + fullPathOfTarget + "\"");
 
-            // TODO: Actually move it.
+            // Get the path that we're offloading the folder to.
             string fullPathOnHDD = SSDToHDDPath(fullPathOfTarget);
-            Console.WriteLine("Pretending to move \"" + fullPathOfTarget + "\" to \"" + fullPathOnHDD + "\"");
+
+            // Error if there is already a folder or file there
+            if (Directory.Exists(fullPathOnHDD) || File.Exists(fullPathOnHDD))
+                ExitWithError("There is already a file or folder at the path \"" + fullPathOnHDD + "\".  Aborting.");
+
+            // Copy the folder to the destination
+            Console.WriteLine("Copying directory to " + fullPathOnHDD);
+            DirectoryCopy(fullPathOfTarget, fullPathOnHDD);
+
+            // TODO: Delete the original and replace with a symlink
+            Console.WriteLine("Pretending to delete " + fullPathOfTarget);
+            Console.WriteLine("Pretending to replace it with a symlink to " + fullPathOnHDD);
         }
 
         private static void SetOffloadDest(string[] args)
