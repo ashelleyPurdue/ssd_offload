@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace ssd_offload
 {
@@ -13,6 +14,20 @@ namespace ssd_offload
 
         public delegate void SubcommandMethod(string[] args);
         private static Dictionary<string, SubcommandMethod> subcommands = new Dictionary<string, SubcommandMethod>();
+
+        // Pilfered from StackOverflow: https://stackoverflow.com/questions/11156754/what-the-c-sharp-equivalent-of-mklink-j
+        #region importing stuff for CreateSymbolicLink
+        [DllImport("kernel32.dll")]
+        static extern bool CreateSymbolicLink(
+        string lpSymlinkFileName, string lpTargetFileName, SymbolicLink dwFlags);
+
+        enum SymbolicLink
+        {
+            File = 0,
+            Directory = 1
+        }
+        #endregion
+
 
         static void Main(string[] args)
         {
@@ -86,7 +101,7 @@ namespace ssd_offload
             }
         }
 
-    private static string SSDToHDDPath(string ssdPath)
+        private static string SSDToHDDPath(string ssdPath)
         {
             // Converts the given path on the SSD to the path on the HDD
 
@@ -143,17 +158,25 @@ namespace ssd_offload
             // Get the path that we're offloading the folder to.
             string fullPathOnHDD = SSDToHDDPath(fullPathOfTarget);
 
+            string tempSymlinkName = fullPathOfTarget + "_symlink";
+            Console.WriteLine("original path: " + fullPathOfTarget);
+            Console.WriteLine("offloaded path: " + fullPathOnHDD);
+            Console.WriteLine("symlink path: " + tempSymlinkName);
+
             // Error if there is already a folder or file there
             if (Directory.Exists(fullPathOnHDD) || File.Exists(fullPathOnHDD))
                 ExitWithError("There is already a file or folder at the path \"" + fullPathOnHDD + "\".  Aborting.");
 
             // Copy the folder to the destination
-            Console.WriteLine("Copying directory to " + fullPathOnHDD);
+            Console.WriteLine("Copying...");
             DirectoryCopy(fullPathOfTarget, fullPathOnHDD);
 
-            // TODO: Delete the original and replace with a symlink
-            Console.WriteLine("Pretending to delete " + fullPathOfTarget);
-            Console.WriteLine("Pretending to replace it with a symlink to " + fullPathOnHDD);
+            // TODO: Delete the original
+            Console.WriteLine("Pretending to delete original...");
+
+            // Create a symlink in place of the original
+            Console.WriteLine("Create symbolic link...");
+            CreateSymbolicLink(tempSymlinkName, fullPathOnHDD, SymbolicLink.Directory);
         }
 
         private static void SetOffloadDest(string[] args)
