@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+using System.ComponentModel;
 
 namespace ssd_offload
 {
@@ -16,7 +18,7 @@ namespace ssd_offload
         private static Dictionary<string, SubcommandMethod> subcommands = new Dictionary<string, SubcommandMethod>();
 
         // Pilfered from StackOverflow: https://stackoverflow.com/questions/11156754/what-the-c-sharp-equivalent-of-mklink-j
-        #region importing stuff for CreateSymbolicLink
+        #region importing CreateSymbolicLink
         [DllImport("kernel32.dll")]
         static extern bool CreateSymbolicLink(
         string lpSymlinkFileName, string lpTargetFileName, SymbolicLink dwFlags);
@@ -28,6 +30,53 @@ namespace ssd_offload
         }
         #endregion
 
+        // Pilfered from StackOverflow: https://stackoverflow.com/questions/38299901/get-real-path-from-symlink-c-sharp
+        #region importing GetRealPath
+
+        [DllImport("kernel32.dll", EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern SafeFileHandle CreateFile(string lpFileName, int dwDesiredAccess, int dwShareMode, IntPtr SecurityAttributes, int dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
+
+        [DllImport("kernel32.dll", EntryPoint = "GetFinalPathNameByHandleW", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern int GetFinalPathNameByHandle([In] IntPtr hFile, [Out] StringBuilder lpszFilePath, [In] int cchFilePath, [In] int dwFlags);
+
+        private const int CREATION_DISPOSITION_OPEN_EXISTING = 3;
+        private const int FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+
+
+        public static string GetRealPath(string path)
+        {
+            if (!Directory.Exists(path) && !File.Exists(path))
+            {
+                throw new IOException("Path not found");
+            }
+
+            DirectoryInfo symlink = new DirectoryInfo(path);// No matter if it's a file or folder
+            SafeFileHandle directoryHandle = CreateFile(symlink.FullName, 0, 2, System.IntPtr.Zero, CREATION_DISPOSITION_OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, System.IntPtr.Zero); //Handle file / folder
+
+            if (directoryHandle.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            StringBuilder result = new StringBuilder(512);
+            int mResult = GetFinalPathNameByHandle(directoryHandle.DangerousGetHandle(), result, result.Capacity, 0);
+
+            if (mResult < 0)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            if (result.Length >= 4 && result[0] == '\\' && result[1] == '\\' && result[2] == '?' && result[3] == '\\')
+            {
+                return result.ToString().Substring(4); // "\\?\" remove
+            }
+            else
+            {
+                return result.ToString();
+            }
+        }
+
+        #endregion
 
         static void Main(string[] args)
         {
@@ -137,6 +186,14 @@ namespace ssd_offload
             throw new Exception("Could not find a colon in " + fullpath);
         }
 
+        private static bool IsSymlink(string fullpath)
+        {
+            // Returns if the specified folder is a symlink, or the real deal.
+            string realPath = GetRealPath(fullpath);
+
+            return fullpath != realPath;
+        }
+
 
         #region subcommands
 
@@ -186,6 +243,9 @@ namespace ssd_offload
             string hddPath = SSDToHDDPath(ssdPath);
 
             // TODO: Error if the ssdPath is not a symlink
+            if (!IsSymlink(ssdPath))
+                ExitWithError("The specified folder is not a symlink.");
+
             // TODO: Error if there is no coresponding hddPath
             // TODO: Actually copy it back
             Console.WriteLine("Pretending to restore " + ssdPath);
