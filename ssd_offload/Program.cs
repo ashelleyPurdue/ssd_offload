@@ -158,9 +158,6 @@ namespace ssd_offload
             // Get the path that we're offloading the folder to.
             string fullPathOnHDD = SSDToHDDPath(fullPathOfTarget);
 
-            Console.WriteLine("original path: " + fullPathOfTarget);
-            Console.WriteLine("offloaded path: " + fullPathOnHDD);
-
             // Error if there is already a folder or file there
             if (Directory.Exists(fullPathOnHDD) || File.Exists(fullPathOnHDD))
                 ExitWithError("There is already a file or folder at the path \"" + fullPathOnHDD + "\".  Aborting.");
@@ -169,7 +166,7 @@ namespace ssd_offload
             Console.WriteLine("Copying...");
             DirectoryCopy(fullPathOfTarget, fullPathOnHDD);
 
-            // TODO: Delete the original
+            // Delete the original
             Console.WriteLine("Deleting original...");
             Directory.Delete(fullPathOfTarget, true);
 
