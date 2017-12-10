@@ -51,43 +51,37 @@ namespace ssd_offload
         {
             // Converts the given path on the SSD to the path on the HDD
 
-            // Get the drive letter
-            string driveLetter = GetDriveLetter(ssdPath);
+            // Separate the drive letter from the actual path
+            int driveLetterEnd = GetDriveLetterEnd(ssdPath);
+            string driveLetter = ssdPath.Substring(0, driveLetterEnd);
+            string pathWithoutLetter = ssdPath.Substring(driveLetterEnd + 1);
+
             Console.WriteLine(driveLetter);
+            Console.WriteLine(pathWithoutLetter);
 
             return null;
         }
 
-        private static string GetDriveLetter(string fullpath)
+        private static int GetDriveLetterEnd(string fullpath)
         {
-            // Returns the drive letter of the path
+            // Returns the index of the colon after the drive letter.
             // It doesn't necessarily need to be a single letter
 
-            StringBuilder builder = new StringBuilder();
-            bool foundColon = false;
-
-            foreach (char c in fullpath)
+            for (int i = 0; i < fullpath.Length; i++)
             {
+                char c = fullpath[i];
+
                 // Error if we hit a slash
                 if (c == '\\')
                     throw new Exception("" + fullpath + " does not have a valid drive letter");
 
                 // Stop when we hit a colon
                 if (c == ':')
-                {
-                    foundColon = true;
-                    break;
-                }
-
-                // Add it to the current drive letter
-                builder.Append(c);
+                    return i;
             }
 
             // Error if we never ran into a colon
-            if (!foundColon)
-                throw new Exception("Could not find a colon in " + fullpath);
-
-            return builder.ToString();
+            throw new Exception("Could not find a colon in " + fullpath);
         }
 
 
