@@ -233,7 +233,6 @@ namespace ssd_offload
 
             string ssdPath = Path.GetFullPath(args[1]);
             string hddPath = SSDToHDDPath(ssdPath);
-            string tmpRestorePath = ssdPath + "_temp";
 
             // Error if it doesn't point to hddPath, or if it's not a symlink
             if (GetRealPath(ssdPath) != hddPath)
@@ -243,11 +242,13 @@ namespace ssd_offload
             if (!Directory.Exists(hddPath))
                 ExitWithError("The folder \"" + hddPath + "\" does not exist.");
 
-            // TODO: Delete the symlink
+            // Delete the symlink
+            Console.WriteLine("Deleting symlink");
+            Directory.Delete(ssdPath);
 
             // Copy it back
-            Console.WriteLine("Restoring...");
-            DirectoryCopy(hddPath, tmpRestorePath);
+            Console.WriteLine("Restoring original...");
+            DirectoryCopy(hddPath, ssdPath);
 
             // Delete the old copy
             Console.WriteLine("Deleting old copy...");
